@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data;
 
 namespace LinqBasics
 {
@@ -8,9 +9,10 @@ namespace LinqBasics
     {
         static void Main(string[] args)
         {
-            BasicSelect.printBasicSelect();
- 
-
+            //BasicSelect.printBasicSelect();
+            //BasicJoin.printBasicJoin();
+            //BasicXML.saveXML();
+            BasicXML.readXML();
         }
     }
 }

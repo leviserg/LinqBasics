@@ -10,7 +10,7 @@ namespace LinqBasics
     {
         public static void printBasicSelect()
         {
-            List<Customer> customers = CustomersCollection.Customers;
+            List<Customer> customers = CustomersCollection.customers;
 
             Console.WriteLine("======== filtered customers by state ========");
             /*
@@ -25,11 +25,11 @@ namespace LinqBasics
 
 
             */
-            var filteredStateCustomers = CustomersCollection.Customers.Where(x => x.State == "GA").ToList();
+            var filteredStateCustomers = CustomersCollection.customers.Where(x => x.State == "GA").ToList();
 
             foreach (Customer customer in filteredStateCustomers)
             {
-                Console.WriteLine($"{customer.State} : {customer.FirstName} {customer.LastName} {customer.Age} {customer.Price}");
+                //Console.WriteLine($"{customer.State} : {customer.FirstName} {customer.LastName} {customer.Age} {customer.Price}");
             }
 
             Console.WriteLine("======== filtered customers by age ========");
@@ -38,7 +38,7 @@ namespace LinqBasics
 
             foreach (Customer customer in filteredAgeCustomers)
             {
-                Console.WriteLine($"{customer.State} : {customer.FirstName} {customer.LastName} {customer.Age} {customer.Price}");
+                //Console.WriteLine($"{customer.State} : {customer.FirstName} {customer.LastName} {customer.Age} {customer.Price}");
             }
 
             Console.WriteLine("======== Transformation ========");
@@ -55,7 +55,7 @@ namespace LinqBasics
             
             foreach (var item in customerPurchases)
             {
-                Console.WriteLine($"{item.FirstName} {item.LastName} : purchase - {item.Purchase}");
+                //Console.WriteLine($"{item.FirstName} {item.LastName} : purchase - {item.Purchase}");
             }
 
             Console.WriteLine("======== ReCalculation ========");
@@ -71,12 +71,40 @@ namespace LinqBasics
 
             foreach (var item in customerEuroPrices)
             {
-                Console.WriteLine($"{item.FullName} : {item.UsdPrice} USD ; {item.EuroPrice} EURO");
+                //Console.WriteLine($"{item.FullName} : {item.UsdPrice} USD ; {item.EuroPrice} EURO");
             }
 
 
-            Console.WriteLine("======== SkipFilter ========");
+            Console.WriteLine("======== TakeAndSkipFilter ========");
 
+
+            string[] Purchases = {  "Panel 625", "Panel 200",
+                                    "Panel 200", "Panel 180",
+                                    "Bulb 23W", "Panel 625",
+                                    "Bulb 23W", "12V Li", "Panel 180",
+                                    "Panel 625",
+                                    "12V Li",
+                                    "12V Li", "AA NiMH",
+                                    "Bulb 23W", "Panel 180",
+                                    "Panel 180", "Panel 200",
+                                    "Panel 625", "Bulb 23W", "Bulb 9W",
+                                    "Bulb 23W", "Bulb 9W",
+                                    "Panel 200"
+                                 };
+
+            //var customerFilterSkip = Purchases.Take(3); // get top 3 items
+            //var customerFilterSkip = Purchases.Skip(3); // get all after 3 items
+            //var customerFilterSkip = Purchases.Skip(3).Take(3); // get next 3 items after first 3 items
+            //var customerFilterSkip = Purchases.TakeWhile(c => c.Contains("Panel")); // get first X items while the condition true
+            var customerFilterSkip = Purchases.SkipWhile(c => c.Contains("Panel")); // skip first X items while the condition true
+
+            foreach (var item in customerFilterSkip)
+            {
+                //Console.WriteLine($"{item}");
+            }
+
+
+            /*
             var customerFilterSkip = customers.
             Where(x => x.State == "OR").
             AsEnumerable().SkipWhile(c => c.LastName.Contains("B"));
@@ -85,6 +113,7 @@ namespace LinqBasics
             {
                 Console.WriteLine($"{item.FirstName} {item.LastName}");
             }
+            */
 
             Console.WriteLine("======== Ordered ========");
 
@@ -96,8 +125,16 @@ namespace LinqBasics
             */
             foreach (var item in customerOrdered)
             {
-                Console.WriteLine($"{item.FirstName} {item.LastName} : Price = {item.Price}");
+                //Console.WriteLine($"{item.FirstName} {item.LastName} : Price = {item.Price}");
             }
+
+            IOrderedEnumerable<Customer> customerOrderedBy2Params = customers.OrderBy(c => c.State).ThenBy(c => c.LastName);
+
+            foreach (var item in customerOrderedBy2Params)
+            {
+                Console.WriteLine($"{item.State} : {item.LastName}, {item.FirstName}");
+            }
+
 
             Console.WriteLine("======== Group By ========");
 
@@ -122,13 +159,42 @@ namespace LinqBasics
 
             foreach (IGrouping<bool, Customer> cutomerGoup in customerGrouped)
             {
-                Console.WriteLine(cutomerGoup.Key);
+                //Console.WriteLine(cutomerGoup.Key);
                 foreach (Customer item in cutomerGoup)
                 {
-                    Console.WriteLine($"\t{item.FirstName} {item.LastName} : Price = {item.Price}");
+                    //Console.WriteLine($"\t{item.FirstName} {item.LastName} : Price = {item.Price}");
                 }
             }
 
+
+            // into keyword:
+            /*
+            var topEuroQuery = from c in customers
+                               select new { euroPrice = c.Price * 0.89, customer = c }
+                               into InEuros
+                               where InEuros.euroPrice > 500.0
+                               orderby InEuros.customer.LastName
+                               select new { InEuros.customer.LastName, InEuros.customer.FirstName, InEuros.euroPrice };
+            */
+
+
+            // let keyword:
+            
+            var topEuroQuery = from c in customers
+                               let euroPrice = c.Price * 0.89
+                               where euroPrice > 500.0
+                               orderby c.LastName
+                               select new { c.LastName, c.FirstName, euroPrice };
+
+            /*
+            var topEuroQuery = customers.Select(c => new { euroPrice = 0.89 * c.Price, c.LastName, c.FirstName }).
+                                        Where(c => c.euroPrice > 500.0).
+                                        OrderBy(c => c.LastName);
+            */
+            foreach (var item in topEuroQuery)
+            {
+                Console.WriteLine($"{item.LastName}, {item.FirstName} : {item.euroPrice}");
+            }
 
         }
     }
